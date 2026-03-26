@@ -12,11 +12,14 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import environ
 import os
+from urllib.parse import urlparse, parse_qsl
+from dotenv import load_dotenv
 
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 env = environ.Env(DEBUG=(bool, False))
 
@@ -32,7 +35,10 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS =  ['127.0.0.1', 'localhost']
+if DEBUG:
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+else:
+    ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 # Application definition
 
@@ -93,17 +99,32 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'SECRET_KEY': env('SECRET_KEY'),
-        'NAME': env('DB_NAME'),
-        'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST': env('DB_HOST'),
-        'PORT': env('DB_PORT'),
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('DB_NAME'),
+            'SECRET_KEY': env('SECRET_KEY'),
+            'USER': env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST'),
+            'PORT': env('DB_PORT'),
+        }
     }
-}
+else:
+    tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': tmpPostgres.path.replace('/', ''),
+            'USER': tmpPostgres.username,
+            'PASSWORD': tmpPostgres.password,
+            'HOST': tmpPostgres.hostname,
+            'PORT': 5432,
+            'OPTIONS': dict(parse_qsl(tmpPostgres.query)),
+        }
+    }
 
 
 # Password validation
@@ -159,13 +180,17 @@ REST_FRAMEWORK = {
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5173",
-    "http://localhost:5173",
-]
+if DEBUG:
+    # Development CORS
+    CORS_ALLOWED_ORIGINS = [
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+    ]
+else:
+    CORS_ALLOWED_ORIGINS = env.list('PROD_CORS_ALLOWED_ORIGINS', default=[])
 
-SESSION_COOKIE_SECURE = False  # True in production
-CSRF_COOKIE_SECURE = False     # True in production
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG 
 
 INTERSWITCH_CLIENT_ID = env('INTERSWITCH_CLIENT_ID')
 INTERSWITCH_CLIENT_SECRET = env('INTERSWITCH_CLIENT_SECRET')

@@ -51,7 +51,7 @@ def mark_payment_success(payment, pay_ref=None):
     Escrow.objects.get_or_create(
         invoice=invoice,
         defaults={
-            "amount": payment.total_amount,
+            "amount": payment.item_price,
             "escrow_days": invoice.escrow_period.days,
             "release_date": None,
         }
