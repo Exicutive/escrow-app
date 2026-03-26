@@ -33,6 +33,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'cloudinary_storage',
+    'cloudinary',
+
     'rest_framework',
     "rest_framework.authtoken",
     'corsheaders',
@@ -124,6 +127,12 @@ USE_TZ = True
 STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Cloudinary Setup for Production
+if not DEBUG:
+    import cloudinary
+    cloudinary.config(secure=True)
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # REST framework
 REST_FRAMEWORK = {
