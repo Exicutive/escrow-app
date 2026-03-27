@@ -16,6 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
+
+def health_check(request):
+    return JsonResponse({"status": "OK"})
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -28,6 +32,7 @@ urlpatterns = [
     path('apps/invoice/', include('apps.invoice.urls')),
     path('apps/payment/', include('apps.payments.urls')),
     path('apps/sellerdashboard/', include('apps.sellerdashboard.urls')),
+    path('health/', health_check, name='health_check'),
 ]
 
 # --- ADD THIS AT THE BOTTOM OF THE FILE ---
