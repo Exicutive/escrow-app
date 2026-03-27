@@ -1,153 +1,144 @@
-# SecureTrade Escrow
+# Escrow Marketplace MVP
 
-### A secure escrow payment platform that enables buyers and sellers to transact online with confidence
+A **Django REST Framework backend** for an escrow-based marketplace where buyers and sellers can transact securely.
 
+The system allows sellers to create invoices, buyers to pay through **Interswitch Web Checkout**, and funds to be held in **escrow until delivery confirmation**.
 
-## Overview
+----
 
-**SecureTrade Escrow** is a trust-building platform designed to solve the fundamental challenge in online gadget sales: **mutual distrust between buyers and sellers**. 
+# Features
 
-By holding funds securely until delivery is confirmed, we eliminate fraud risk for both parties and enable seamless online transactions.
+* Secure invoice links using `access_token`
+* Invoice generation for seller transactions
+* Payment initiation via **Interswitch Web Checkout**
+* Payment verification using **redirect + webhook**
+* Escrow holding system after successful payment
+* Buyer order progress tracking
+* Seller dashboard with transferable funds
+* Manual seller withdrawals
 
+---
 
-## Problem Statement
+# How It Works (Step-by-Step)
 
-In online gadget sales (phones, laptops, consoles, etc.), two critical trust issues exist:
+1. **Seller Registration:** A user creates an account and selects the **"Seller"** role.
+2. **Invoice Creation:** The seller creates a new invoice, filling in the item details, price, delivery timeframe, and critically, the **Buyer's Email Address**.
+3. **Share Link:** The system generates a unique, secure payment link. The seller sends this link to the buyer.
+4. **Buyer Payment:** The buyer clicks the link, views the invoice details, and pays via the Interswitch Web Checkout.
+5. **Buyer Registration/Login:** To track the order and confirm delivery, the buyer must sign up or log in to a **"Buyer"** account **using the exact email address the seller entered in the invoice**. 
+6. **Escrow & Delivery:** The funds are held in escrow. Once the buyer confirms delivery on their dashboard, the funds are released to the seller's wallet for withdrawal.
 
-### Buyers' Fear
-- Being scammed after making payment
-- Receiving fake or damaged products
-- No recourse for disputes
+### Testing Payments (Interswitch)
+Since this is an MVP using a sandbox environment, you can test the payment gateway using Interswitch's official Test Cards.
+* **Test Cards Link:** [Interswitch Test Cards Documentation](https://docs.interswitchgroup.com/docs/test-cards)
+* **Standard Test OTP:** `123456`
+* Use any of the Verve, Mastercard, or Visa test cards provided in the link above to simulate a successful transaction.
 
-### Sellers' Fear
-- Fake "Pay on Delivery" orders
-- Buyers refusing to pay after delivery
-- Time and logistics wasted
+---
 
-### This lack of trust results in:
-- Lost sales opportunities
-- High transaction cancellation rates
-- Increased fraud incidents
-- Poor customer experience
+# Tech Stack
 
-## Solution
+* React
+* Python
+* Django
+* Django REST Framework
+* Neon DB (PostgreSQL) (recommended)
+* Cloudinary (For Images)
+* Interswitch Web Checkout
 
-Our intelligent escrow system creates a **win-win situation** for both parties:
-A. Seller Creates Invoice
-B. Buyer Pays via Interswitch
-C. Funds Held in Escrow
-D. Seller Ships Item
-E. Buyer Confirms Receipt
-F. Funds Released to Seller
+---
 
-**No more risk, no more fear – just smooth, secure transactions!**
+# Installation
 
-## Features
+Clone the repository:
 
+```
+git clone https://github.com/Exicutive/testescrow.git
+cd escrow-mvp-backend
+```
 
-- Business registration and verification
-- Create escrow invoices with item details
-- Upload item images
-- Track escrow transaction status 
-- Mark items as shipped with tracking details
-- Secure wallet system
-- Withdraw funds to bank account
-- Complete transaction history
+Create a virtual environment:
 
+```
+python -m venv escrowvenv
+```
 
+Activate it:
 
-<details open>
-<summary><b>For Buyers (Customers)</b></summary>
+Mac/Linux
 
-<br>
+```
+source venv/bin/activate
+```
 
-- Simple registration (Email/Phone)
-- Secure payment via Interswitch
-  - Card payments
-  - Bank transfers
-  - USSD
-- View invoice and payment status
-- Confirm delivery
-- Raise disputes when necessary
+Windows
 
-</details>
+```
+venv\Scripts\activate
+```
 
-<details open>
-<summary><b>For Admins</b></summary>
+Install dependencies:
 
-<br>
+```
+pip install -r requirements.txt
+```
 
-- Monitor all transactions
-- Access reports 
-- Manage user accounts
+Run migrations:
 
-</details>
+```
+python manage.py migrate
+```
 
-<details open>
-<summary><b>System Features</b></summary>
+Start the development server:
 
-<br>
+```
+python manage.py runserver
+```
 
-- Automated escrow holding logic
-- Auto-release mechanism (if buyer doesn't respond)
-- Secure webhook integration with Interswitch
-- Comprehensive audit logging
-- Fraud detection and prevention
+---
 
+# Environment Variables
 
-## 🛠 Tech Stack
+Create a `.env` file and add the following:
 
+```
+SECRET_KEY=your_django_secret_key
 
-**Frontend**
-- React
+INTERSWITCH_MERCHANT_CODE=your_merchant_code
+INTERSWITCH_PAY_ITEM_ID=your_pay_item_id
 
-**Backend**
-- Node.js / FastAPI
-- RESTful API
-- JWT Authentication
+INTERSWITCH_REDIRECT_URL=http://127.0.0.1:8000/apps/payment/response/
+```
 
-**Database**
-- PostgreSQL
-- Transaction Management
+---
 
-**Infrastructure**
-- AWS Hosting
-- Redis Queue System
-- Docker (Optional)
+# Payment Flow
 
+Seller → Creates invoice
+Buyer → Opens invoice link
+Buyer → Pays via Interswitch checkout
+Interswitch → Sends webhook to backend
+Backend → Confirms payment
+Escrow → Funds held until delivery confirmation
 
-**Payment & APIs**
-- Interswitch API
-- Webhook Integration
-- Payout System
+---
 
+# Project Structure
 
-**Security:**
-- Signature validation using HMAC-SHA512
-- IP whitelist verification
-- Duplicate transaction prevention
+```
+apps/
+ ├── accounts
+ ├── buyerdashboard
+ ├── escrow
+ ├── invoice
+ ├── payment
+ └── sellerdashboard
+```
 
+# API Endpoints (Core)
 
-## 🗺 Roadmap
+For detailed information on all available endpoints, required permissions, request body formats, and sample responses, please refer to the full **[API Documentation](server/Documentation.md)**.
 
-### MVP - Phase 1 (Current)
+# License
 
-**Core Escrow Platform**
-
-
-**Authentication & Users**
-- [x] User registration system
-- [x] Role-based access
-
-**Transaction Management**
-- [x] Invoice creation
-- [x] Interswitch payment integration
-- [x] Escrow holding logic
-- [x] Auto-release mechanism
-
-**Operations**
-- [x] Delivery confirmation
-- [x] Seller wallet system
-- [x] Bank payout integration
-
-
+MIT
